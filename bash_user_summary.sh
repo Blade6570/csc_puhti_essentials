@@ -24,8 +24,8 @@ unique_users=`squeue -h -p gpu -o "%u" | sort | uniq`
 
 for value in $unique_users
 	do
-		gpu_in_use=`sacct -n -X --state running --user  $value --format=jobid,elapsed,ncpus,ntasks,state,AllocGRES | awk '{print $5}' | awk -F '[ :]' '{print $2}' | awk '{s+=$1} END {print s}'`
-		cpu_in_use=`sacct -n -X --state running --user  $value --format=jobid,elapsed,ncpus,ntasks,state,AllocGRES | awk '{print $3}' | awk '{s+=$1} END {print s}'`
+		gpu_in_use=`sacct -n -X --state running -r gpu --user  $value --format=jobid,elapsed,ncpus,ntasks,state,AllocGRES | awk '{print $5}' | awk -F '[ :]' '{print $2}' | awk '{s+=$1} END {print s}'`
+		cpu_in_use=`sacct -n -X --state running -r gpu --user  $value --format=jobid,elapsed,ncpus,ntasks,state,AllocGRES | awk '{print $3}' | awk '{s+=$1} END {print s}'`
 
 		# if $gpu_in_use is empty, then a user waits in the queue CPU/GPU is -1
 		if [ -z "$gpu_in_use" ]
