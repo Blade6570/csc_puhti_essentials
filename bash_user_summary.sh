@@ -80,7 +80,7 @@ unique_users=`squeue -h -p gpu -o "%u" | sort | uniq`
 
 for value in $unique_users
 	do
-	    gpu_in_use=`squeue -h -t R -p gpu --user $value -o "%.10b %10D" | awk -F'[: ]' '{print $3 * $4}' | awk '{s+=$1} END {print s}'`
+	    gpu_in_use=`squeue -h -t R -p gpu --user $value -o "%.100b %10D" | awk  '{print $1 "\t" $2 }' |sed 's/teslav100://'|sed 's/teslap100://' |sed 's/gpu://' | awk '{print $1 * $2}' | awk '{s+=$1} END {print s}'`
 		cpu_in_use=`squeue -h -t R -p gpu --user $value -o "%.10c %10D" | awk '{print $1 * $2}' | awk '{s+=$1} END {print s}'`
 
 		# if $gpu_in_use is empty, then a user waits in the queue CPU/GPU is -1
