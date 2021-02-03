@@ -63,6 +63,44 @@ total_gpu_in_csc=$(echo "${total_gpu}*${mul_fac}" | bc -l)
 echo Total GPUs in CSC: "$total_gpu_in_csc "
 
 echo Total GPUs are in use: "$total_gpu_in_use "
+echo
+echo
+echo 'Hello, Now we have node wise GPU info. If you want to see then press "y" for Yes or "n" for No?'
+
+read -p 'response: ' varname
+
+if [ $varname = 'y' ]
+ then
+     echo
+     echo "Calculating ..."
+     echo
+printf '%10s %4s %3s %12s' "NODE" "CPU" "GPU" "FREE-GPU"
+echo
+
+unique_nodes=`sinfo -h -p gpu -o "%n" | sort | uniq`
+array=()
+for value in $unique_nodes
+	do
+	    gpu_in_use=`scontrol show node $value | grep AllocTRES | awk -F'[,]' '{print $3}' | awk -F'[=]' '{print $2}' | awk '{s+=$1} END {print s}'`
+            cpu_in_use=`scontrol show node $value | grep CPUAlloc | awk -F'[=]' '{print $2}' | awk '{print $1}'| awk '{s+=$1} END {print s}'`
+	    total_gpu=`scontrol show node $value | grep CfgTRES | awk -F'[,]' '{print $4}' | awk -F'[=]' '{print $2}'`
+	    Free_gpu=$((total_gpu-gpu_in_use))
+	    if [ $Free_gpu != 0 ]
+	    then
+		array+=($Free_gpu)
+		while IFS= read -r -u2 u && read -r -u3 a && read -r -u4 b && read -r -u5 c; do
+			printf '%10s %4d %3s %10s\n' "$u" "$a" "$b" "$c"
+		done 2<<<"$value" 3<<<"$cpu_in_use" 4<<<"$gpu_in_use" 5<<<"$Free_gpu"
+	    fi
+	done
+echo
+MAX=$(NUM=1;cons=1;printf '%s\n' "${array[@]}" | sort -nr |  while read LINE; do if [ $LINE -ge $NUM ]; then echo "$NUM"; fi; NUM=$[$NUM+$cons];done;);
+h_index=`echo "$MAX"|tail -1`
+echo "The h-index of the GPUs is : $h_index"
+echo
+echo "done!"
+fi
+
 
 else
     if [ $host = 'narvi' ]
@@ -113,6 +151,46 @@ total_gpu_in_csc=$(echo "${total_gpu}*${mul_fac}" | bc -l)
 echo Total GPUs in CSC: "$total_gpu_in_csc "
 
 echo Total GPUs are in use: "$total_gpu_in_use "
+
+echo
+echo
+echo 'Hello, Now we have node wise GPU info. If you want to see then press "y" for Yes or "n" for No?'
+
+read -p 'response: ' varname
+
+echo
+if [ $varname = 'y' ]
+then
+     echo
+     echo "Calculating ..."
+     echo
+
+printf '%10s %4s %3s %12s' "NODE" "CPU" "GPU" "FREE-GPU"
+echo
+
+unique_nodes=`sinfo -h -p gpu -o "%n" | sort | uniq`
+array=()
+for value in $unique_nodes
+	do
+	    gpu_in_use=`scontrol show node $value | grep AllocTRES | awk -F'[,]' '{print $3}' | awk -F'[=]' '{print $2}' | awk '{s+=$1} END {print s}'`
+            cpu_in_use=`scontrol show node $value | grep CPUAlloc | awk -F'[=]' '{print $2}' | awk '{print $1}'| awk '{s+=$1} END {print s}'`
+	    total_gpu=`scontrol show node $value | grep CfgTRES | awk -F'[,]' '{print $4}' | awk -F'[=]' '{print $2}'`
+	    Free_gpu=$((total_gpu-gpu_in_use))
+	      if [ $Free_gpu != 0 ]
+	      then
+		 array+=($Free_gpu)
+		 while IFS= read -r -u2 u && read -r -u3 a && read -r -u4 b && read -r -u5 c; do
+			printf '%10s %4d %3s %10s\n' "$u" "$a" "$b" "$c"
+		 done 2<<<"$value" 3<<<"$cpu_in_use" 4<<<"$gpu_in_use" 5<<<"$Free_gpu"
+	      fi
+	done
+echo
+MAX=$(NUM=1;cons=1;printf '%s\n' "${array[@]}" | sort -nr |  while read LINE; do if [ $LINE -ge $NUM ]; then echo "$NUM"; fi; NUM=$[$NUM+$cons];done;);
+h_index=`echo "$MAX"|tail -1`
+echo "The h-index of the GPUs is : $h_index"
+echo
+echo "done!"
+fi
 
     fi
 
